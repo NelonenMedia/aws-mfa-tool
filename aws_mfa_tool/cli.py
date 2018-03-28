@@ -37,8 +37,13 @@ def cli():
     '-o', '--save-output-profile',
     help='Shared credentials profile name to be written / overwritten')
 @click.option(
-    '-s', '--skip-save', is_flag=True,
+    '-s', '--skip-save',
+    is_flag=True,
     help='Skip save to shared credentials')
+@click.option(
+    '-j', '--display-json',
+    is_flag=True,
+    help='Display JSON response from the AWS API')
 def create(
     region,
     profile,
@@ -46,7 +51,8 @@ def create(
     duration,
     token_code,
     skip_save,
-    save_output_profile
+    save_output_profile,
+    display_json
 ):
     session = boto3.Session(
         profile_name=profile,
@@ -93,7 +99,8 @@ def create(
             'aws_session_token': aws_session_token,
         })
 
-    print response
+    if display_json is not False:
+        print response
 
 
 @cli.command(
@@ -131,6 +138,10 @@ def create(
     '-s', '--skip-save',
     is_flag=True,
     help='Skip save to shared credentials')
+@click.option(
+    '-j', '--display-json',
+    is_flag=True,
+    help='Display JSON response from the AWS API')
 def create(
     region,
     profile,
@@ -140,7 +151,8 @@ def create(
     duration,
     token_code,
     skip_save,
-    save_output_profile
+    save_output_profile,
+    display_json
 ):
     session = boto3.Session(
         profile_name=profile,
@@ -193,7 +205,8 @@ def create(
             'aws_session_token': aws_session_token,
         })
 
-    print response
+    if display_json is not False:
+        print response
 
 
 def write_profile(profile, values):
