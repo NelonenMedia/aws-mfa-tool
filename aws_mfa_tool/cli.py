@@ -3,6 +3,8 @@ import boto3
 import os
 import random
 import string
+import ConfigParser
+import sys
 
 from getpass import getpass
 
@@ -54,14 +56,25 @@ def create(
     params = {}
 
     if mfa_serial is not None:
+        # MFA ARN passed as an option
         params['SerialNumber'] = mfa_serial
+    else:
+        # MFA ARN not passed as an option. Attempt to fetch from profile.
+        mfa_serial = get_mfa_arn(profile);
+
+        if mfa_serial is not None:
+             params['SerialNumber'] = mfa_serial
+        else:
+             print "Unable to find MFA for profile " + profile + "."
+             print "Configure MFA ARN in ~/.aws/config or pass it with the --mfa-serial option."
+             sys.exit()
 
     if duration is not None:
         params['DurationSeconds'] = duration
 
     if token_code is not None:
         params['TokenCode'] = token_code
-    elif mfa_serial is not None:
+    else:
         params['TokenCode'] = getpass('Input MFA code: ')
 
     response = client.get_session_token(**params)
@@ -139,14 +152,24 @@ def create(
     }
 
     if mfa_serial is not None:
+        # MFA ARN passed as an option
         params['SerialNumber'] = mfa_serial
+    else:
+        # MFA ARN not passed as an option. Attempt to fetch from profile.
+        mfa_arn = get_mfa_arn(profile);
+
+        params['SerialNumber'] = get_mfa_arn(profile)
+        if params['SerialNumber'] is None:
+             print "Unable to find MFA for profile " + profile + "."
+             print "Configure MFA ARN in ~/.aws/config or pass it with the --mfa-serial option."
+             sys.exit()
 
     if duration is not None:
         params['DurationSeconds'] = duration
 
     if token_code is not None:
         params['TokenCode'] = token_code
-    elif mfa_serial is not None:
+    else:
         params['TokenCode'] = getpass('Input MFA code: ')
 
     if role_session_name is None:
@@ -184,6 +207,25 @@ def write_profile(profile, values):
         ))
 
     print 'Saved credentials profile "{}"!'.format(profile)
+
+
+def get_mfa_arn(current_profile_name):
+    config_parser = ConfigParser.ConfigParser()
+    config_parser.read(os.path.expanduser('~/.aws/config'))
+
+    for section in config_parser.sections():
+        section_parts = section.split(' ')
+
+        # Check if this section of the config looks like a profile, and if
+        # it's the profile we're after:
+        if 1 < len(section_parts):
+            if section_parts[0] == 'profile':
+                if section_parts[1] == current_profile_name:
+                    data = dict(config_parser.items(section))
+                    mfa_arn = data.get("mfa_serial")
+                    return mfa_arn
+
+    return None
 
 
 if __name__ == '__main__':
