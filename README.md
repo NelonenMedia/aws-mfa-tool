@@ -11,7 +11,7 @@ pip install aws-mfa-tool
 ## Usage
 
 ```
-> aws-mfa --profile example_profile --mfa-serial <mfa_serial>
+> aws-mfa create --profile example_profile --mfa-serial <mfa_serial>
 ```
 
 This will prompt your for your MFA token. On successful entry, it will print and save the temporary credentials to you `~/.aws/credentials` file. The saved profile name is _< profile_name > by default, so `_example_profile` in this example.
