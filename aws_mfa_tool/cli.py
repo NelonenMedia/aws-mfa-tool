@@ -115,8 +115,10 @@ def create(
     help='AWS shared credentials profile')
 @click.option(
     '-r', '--role-arn',
-    required=True,
     help='AWS shared credentials profile')
+@click.option(
+    '-f', '--from-profile',
+    help='Name of profile from where the Role ARN should be fetched')
 @click.option(
     '--role-session-name',
     help='AWS shared credentials profile')
@@ -146,6 +148,7 @@ def create(
     region,
     profile,
     role_arn,
+    from_profile,
     role_session_name,
     mfa_serial,
     duration,
@@ -159,9 +162,18 @@ def create(
         region_name=region)
     client = session.client('sts')
 
-    params = {
-        'RoleArn': role_arn
-    }
+    params = {}
+
+    if role_arn is not None:
+        params['RoleArn'] = role_arn
+    else:
+        # Fetch Role ARN from the given profile in the config file
+        if from_profile is not None:
+            params['RoleArn'] = get_role_arn_by_profile(from_profile)
+        else:
+            print "Either -r/--role_arn or -f/--from_profile must be given.\n"
+            sys.exit()
+
 
     if mfa_serial is not None:
         # MFA ARN passed as an option
@@ -237,6 +249,25 @@ def get_mfa_arn(current_profile_name):
                     data = dict(config_parser.items(section))
                     mfa_arn = data.get("mfa_serial")
                     return mfa_arn
+
+    return None
+
+
+def get_role_arn_by_profile(from_profile):
+    config_parser = ConfigParser.ConfigParser()
+    config_parser.read(os.path.expanduser('~/.aws/config'))
+
+    for section in config_parser.sections():
+        section_parts = section.split(' ')
+
+        # Check if this section of the config looks like a profile, and if
+        # it's the profile we're after:
+        if 1 < len(section_parts):
+            if section_parts[0] == 'profile':
+                if section_parts[1] == from_profile:
+                    data = dict(config_parser.items(section))
+                    role_arn = data.get("role_arn")
+                    return role_arn
 
     return None
 
