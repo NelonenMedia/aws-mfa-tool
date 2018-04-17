@@ -5,7 +5,8 @@ This is a simple CLI tool to write temporary credentials to `~/.aws.credentials`
 ## Installation
 
 ```
-pip install aws-mfa-tool
+cd aws-mfa-tool
+python setup.py install
 ```
 
 ## Usage
