@@ -131,7 +131,7 @@ def create(
          'you will be prompted for a code')
 @click.option(
     '-d', '--duration',
-    default=86400,
+    default=43200,
     help='STS token TTL in seconds')
 @click.option(
     '-o', '--save-output-profile',
