@@ -12,6 +12,10 @@ python setup.py install
 ## Usage
 
 ```
+> aws-mfa assume-role --profile {PROFILE-OF-USER} --from-profile {PROFILE-OF-ROLE} -o {TEMPORARY-OUTPUT-PROFILE-WITH-TOKEN}
+```
+
+```
 > aws-mfa create --profile example_profile --mfa-serial <mfa_serial>
 ```
 
